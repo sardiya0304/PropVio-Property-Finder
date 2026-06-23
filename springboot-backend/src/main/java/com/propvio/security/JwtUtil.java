@@ -39,8 +39,30 @@ public class JwtUtil {
         String id = parseClaims(token).get("id", String.class);
         if (id == null || id.startsWith("admin:")) return null;
         try {
-            return Long.parseLong(id);
+            long val = Long.parseLong(id);
+            return val > 0 ? val : null; // negative IDs are admin tokens
         } catch (NumberFormatException e) {
+            return null;
+        }
+    }
+
+    public boolean isAdminToken(String token) {
+        try {
+            String id = parseClaims(token).get("id", String.class);
+            if (id == null) return false;
+            return Long.parseLong(id) < 0;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    public Long extractAdminId(String token) {
+        try {
+            String id = parseClaims(token).get("id", String.class);
+            if (id == null) return null;
+            long val = Long.parseLong(id);
+            return val < 0 ? -val : null;
+        } catch (Exception e) {
             return null;
         }
     }

@@ -4,6 +4,7 @@ import com.propvio.model.Property;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -75,4 +76,50 @@ public interface PropertyRepository extends JpaRepository<Property, Long> {
         @Param("maxPrice") double maxPrice,
         Pageable pageable
     );
+
+    // ── Admin queries ──────────────────────────────────────────────────────────
+
+    long countByStatus(String status);
+
+    long countByPostedBy(Long postedBy);
+
+    // Batch property counts for a list of user IDs (avoids N+1 in getAllUsers)
+    @Query("SELECT p.postedBy, COUNT(p) FROM Property p WHERE p.postedBy IN :userIds GROUP BY p.postedBy")
+    List<Object[]> countByPostedByIn(@Param("userIds") List<Long> userIds);
+
+    @Query("SELECT AVG(p.price) FROM Property p WHERE p.status = 'active'")
+    Double findAvgActivePrice();
+
+    @Query("SELECT SUM(p.price) FROM Property p WHERE p.status = 'active'")
+    Double findTotalActivePrice();
+
+    @Query("SELECT COUNT(p) FROM Property p WHERE p.status = 'active' AND p.postedBy IS NOT NULL")
+    long countApprovedUserListings();
+
+    @Query("SELECT p.type, COUNT(p) FROM Property p GROUP BY p.type ORDER BY COUNT(p) DESC")
+    List<Object[]> countByType();
+
+    @Query(value = "SELECT p.location, COUNT(p.id) AS cnt FROM properties p GROUP BY p.location ORDER BY cnt DESC LIMIT 10",
+           nativeQuery = true)
+    List<Object[]> countByLocationTop10();
+
+    // Admin: bulk approve
+    @Modifying
+    @Query("UPDATE Property p SET p.status = 'active', p.rejectionReason = '' WHERE p.id IN :ids")
+    int bulkApprove(@Param("ids") List<Long> ids);
+
+    // Admin: bulk reject
+    @Modifying
+    @Query("UPDATE Property p SET p.status = 'rejected', p.rejectionReason = :reason WHERE p.id IN :ids")
+    int bulkReject(@Param("ids") List<Long> ids, @Param("reason") String reason);
+
+    // Admin: expire active listings when a user is suspended/banned
+    @Modifying
+    @Query("UPDATE Property p SET p.status = 'expired' WHERE p.postedBy = :userId AND p.status = 'active'")
+    int expireActiveByUser(@Param("userId") Long userId);
+
+    // Admin: bulk expire active listings for multiple users
+    @Modifying
+    @Query("UPDATE Property p SET p.status = 'expired' WHERE p.postedBy IN :userIds AND p.status = 'active'")
+    int expireActiveByUsers(@Param("userIds") List<Long> userIds);
 }

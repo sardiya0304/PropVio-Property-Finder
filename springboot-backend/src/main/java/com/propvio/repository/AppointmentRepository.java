@@ -12,4 +12,15 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
     List<Appointment> findByPropertyId(Long propertyId);
 
     List<Appointment> findByStatus(String status);
+
+    // Admin queries
+    long countByStatus(String status);
+
+    long countByUserId(Long userId);
+
+    List<Appointment> findByUserId(Long userId);
+
+    List<Appointment> findAllByOrderByCreatedAtDesc();
+
+    List<Appointment> findTop5ByOrderByCreatedAtDesc();
 }

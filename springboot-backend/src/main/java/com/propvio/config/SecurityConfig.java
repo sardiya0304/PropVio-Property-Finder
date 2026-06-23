@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -22,16 +23,21 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
+            .cors(Customizer.withDefaults())
             .csrf(AbstractHttpConfigurer::disable)
             .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
+                // Allow preflight requests through without authentication
+                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+
                 // Public endpoints — same as Node.js open routes
                 .requestMatchers("/api/user/login",
                                  "/api/user/register",
                                  "/api/user/verify/**",
                                  "/api/user/forgot",
                                  "/api/user/reset/**",
-                                 "/api/user/admin").permitAll()
+                                 "/api/user/admin",
+                                 "/api/users/admin").permitAll()
 
                 // Public product/property reads
                 .requestMatchers(HttpMethod.GET, "/api/product/**").permitAll()
@@ -53,6 +59,12 @@ public class SecurityConfig {
 
                 // Health / actuator / error page
                 .requestMatchers("/actuator/**", "/api/health/**", "/error").permitAll()
+
+                // ImageKit diagnostic tests — remove after confirming uploads work
+                .requestMatchers("/api/test/**").permitAll()
+
+                // Admin-only routes — require ROLE_ADMIN
+                .requestMatchers("/api/admin/**").hasRole("ADMIN")
 
                 // Everything else needs JWT
                 .anyRequest().authenticated()

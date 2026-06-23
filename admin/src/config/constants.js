@@ -1,5 +1,5 @@
 // Configuration constants
-export const backendurl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:4000';
+export const backendurl = import.meta.env.VITE_BACKEND_URL || '';
 
 // API endpoints
 export const API_ENDPOINTS = {

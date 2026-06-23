@@ -37,6 +37,10 @@ public class PropertyService {
         propertyRepo.delete(property);
     }
 
+    public List<Property> getAllProperties() {
+        return propertyRepo.findAll(Sort.by(Sort.Direction.DESC, "createdAt"));
+    }
+
     public List<Property> getUserListings(Long userId) {
         return propertyRepo.findByPostedBy(userId);
     }

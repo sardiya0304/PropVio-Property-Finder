@@ -28,6 +28,8 @@ const Login = () => {
         localStorage.setItem("token", response.data.token);
         localStorage.setItem("isAdmin", "true");
         toast.success("Welcome back, Admin!");
+        console.log('111111===');
+        
         navigate("/dashboard");
       } else {
         toast.error(response.data.message || "Login failed");

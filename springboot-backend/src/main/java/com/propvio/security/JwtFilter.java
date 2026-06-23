@@ -1,5 +1,6 @@
 package com.propvio.security;
 
+import com.propvio.repository.AdminRepository;
 import com.propvio.service.UserService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -21,6 +22,7 @@ public class JwtFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
     private final UserService userService;
+    private final AdminRepository adminRepository;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
@@ -32,17 +34,29 @@ public class JwtFilter extends OncePerRequestFilter {
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             String token = authHeader.substring(7);
 
-            if (jwtUtil.isValid(token)) {
-                Long userId = jwtUtil.extractUserId(token);
-
-                if (userId != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-                    userService.findById(userId).ifPresent(user -> {
-                        var auth = new UsernamePasswordAuthenticationToken(
-                            user, null,
-                            List.of(new SimpleGrantedAuthority("ROLE_USER"))
-                        );
-                        SecurityContextHolder.getContext().setAuthentication(auth);
-                    });
+            if (jwtUtil.isValid(token) && SecurityContextHolder.getContext().getAuthentication() == null) {
+                if (jwtUtil.isAdminToken(token)) {
+                    Long adminId = jwtUtil.extractAdminId(token);
+                    if (adminId != null) {
+                        adminRepository.findById(adminId).ifPresent(admin -> {
+                            var auth = new UsernamePasswordAuthenticationToken(
+                                admin, null,
+                                List.of(new SimpleGrantedAuthority("ROLE_ADMIN"))
+                            );
+                            SecurityContextHolder.getContext().setAuthentication(auth);
+                        });
+                    }
+                } else {
+                    Long userId = jwtUtil.extractUserId(token);
+                    if (userId != null) {
+                        userService.findById(userId).ifPresent(user -> {
+                            var auth = new UsernamePasswordAuthenticationToken(
+                                user, null,
+                                List.of(new SimpleGrantedAuthority("ROLE_USER"))
+                            );
+                            SecurityContextHolder.getContext().setAuthentication(auth);
+                        });
+                    }
                 }
             }
         }

@@ -193,7 +193,7 @@ const Dashboard = () => {
         }
 
         if (activityRes.status === 'fulfilled' && activityRes.value.data.success) {
-          setRecentActivity(activityRes.value.data.data || []);
+          setRecentActivity(activityRes.value.data.logs || activityRes.value.data.data || []);
         }
       } catch (enhancedError) {
         console.log('Enhanced stats failed, falling back to basic stats');

@@ -1,5 +1,7 @@
 com\propvio\controller\UserController.class
 com\propvio\service\AiCalculatorService$PriceEstimate.class
+com\propvio\config\WebConfig.class
+com\propvio\controller\UsersAliasController.class
 com\propvio\controller\ContactController.class
 com\propvio\model\Admin.class
 com\propvio\model\User.class
@@ -22,8 +24,11 @@ com\propvio\service\UserService.class
 com\propvio\PropvioApplication.class
 com\propvio\repository\UserInteractionRepository.class
 com\propvio\config\CorsConfig.class
+com\propvio\controller\ImageKitTestController.class
 com\propvio\repository\AdminRepository.class
+com\propvio\model\AdminActivityLog.class
 com\propvio\security\JwtFilter.class
+com\propvio\config\CorsConfig$1.class
 com\propvio\config\SecurityConfig.class
 com\propvio\dto\request\RegisterRequest.class
 com\propvio\controller\AppointmentController.class
@@ -31,7 +36,9 @@ com\propvio\controller\PropertyController.class
 com\propvio\model\Property.class
 com\propvio\repository\UserRepository.class
 com\propvio\service\AiRecommendationService$RecommendedProperty.class
+com\propvio\repository\AdminActivityLogRepository.class
 com\propvio\config\PasswordEncoderConfig.class
+com\propvio\controller\AdminController.class
 com\propvio\controller\AiController.class
 com\propvio\service\AiCalculatorService.class
 com\propvio\config\AiConfig.class

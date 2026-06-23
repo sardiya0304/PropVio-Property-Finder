@@ -98,9 +98,7 @@ const PropertyForm = () => {
         }
       });
 
-      const response = await apiClient.post('/api/products/add', formdata, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      });
+      const response = await apiClient.post('/api/products/add', formdata);
 
       if (response.data.success) {
         toast.success('Property added successfully!');

@@ -18,14 +18,16 @@ const SORT_OPTIONS = [
 ];
 
 const parseAmenities = (amenities) => {
-  if (!amenities || !Array.isArray(amenities)) return [];
-  try {
-    return typeof amenities[0] === "string"
-      ? JSON.parse(amenities[0].replace(/'/g, '"'))
-      : amenities;
-  } catch {
-    return [];
+  if (!amenities || !Array.isArray(amenities) || amenities.length === 0) return [];
+  // MongoDB format: single-element array containing a JSON string e.g. ['["WiFi","Pool"]']
+  if (amenities.length === 1 && typeof amenities[0] === "string") {
+    try {
+      const parsed = JSON.parse(amenities[0].replace(/'/g, '"'));
+      if (Array.isArray(parsed)) return parsed;
+    } catch {}
   }
+  // Spring Boot format: plain string array e.g. ["WiFi", "Pool"]
+  return amenities;
 };
 
 // ─── Property Grid Card ───────────────────────────────────────────────────────
