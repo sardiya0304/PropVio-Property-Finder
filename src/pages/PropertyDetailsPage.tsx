@@ -9,6 +9,7 @@ import PropertyHeader from '../components/property-details/PropertyHeader';
 import PropertyAbout from '../components/property-details/PropertyAbout';
 import PropertyAmenities from '../components/property-details/PropertyAmenities';
 import PropertyLocation from '../components/property-details/PropertyLocation';
+import NearbyFacilities from '../components/property-details/NearbyFacilities';
 import ScheduleViewingCard from '../components/property-details/ScheduleViewingCard';
 import { propertiesAPI } from '../services/api';
 import { useSEO } from '../hooks/useSEO';
@@ -193,6 +194,12 @@ const PropertyDetailsPage: React.FC = () => {
                 <PropertyLocation
                   location={property.location}
                   propertyName={property.title}
+                  googleMapLink={property.googleMapLink}
+                />
+
+                {/* Nearby Facilities Section */}
+                <NearbyFacilities
+                  location={property.location}
                   googleMapLink={property.googleMapLink}
                 />
               </div>

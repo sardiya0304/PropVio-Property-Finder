@@ -107,22 +107,48 @@ const AddPropertyPage: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (images.length === 0) {
-      toast.error('Please upload at least one image.');
-      return;
-    }
-
-    const fd = new FormData();
-    Object.entries(form).forEach(([key, val]) => fd.append(key, val));
-    fd.append('amenities', JSON.stringify(amenities));
-    images.forEach((img) => fd.append('images', img));
+    const availabilityMap: Record<string, string> = {
+      'For Sale': 'buy',
+      'For Rent': 'rent',
+    };
 
     setSubmitting(true);
     try {
-      await userListingsAPI.create(fd);
+      // 1. Upload images to ImageKit via backend, get back CDN URLs
+      let imageUrls: string[] = [];
+      if (images.length > 0) {
+        toast.loading('Uploading images…', { id: 'img-upload' });
+        imageUrls = await userListingsAPI.uploadImages(images);
+        toast.dismiss('img-upload');
+        if (imageUrls.length === 0) {
+          toast.error('Image upload failed. Please try again.');
+          setSubmitting(false);
+          return;
+        }
+      }
+
+      // 2. Submit property with the returned image URLs
+      const payload = {
+        title:         form.title,
+        type:          form.type.toLowerCase(),
+        availability:  availabilityMap[form.availability] ?? form.availability.toLowerCase(),
+        location:      form.location,
+        price:         parseFloat(form.price),
+        beds:          parseInt(form.beds, 10),
+        baths:         parseInt(form.baths, 10),
+        sqft:          parseFloat(form.sqft),
+        description:   form.description,
+        phone:         form.phone,
+        googleMapLink: form.googleMapLink,
+        amenities,
+        imageUrls,
+      };
+
+      await userListingsAPI.create(payload);
       setSubmitted(true);
       toast.success('Listing submitted! It will go live once approved by our team.');
     } catch (err: any) {
+      toast.dismiss('img-upload');
       const msg = err.response?.data?.message || 'Failed to submit listing. Please try again.';
       toast.error(msg);
     } finally {

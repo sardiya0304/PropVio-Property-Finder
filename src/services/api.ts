@@ -9,11 +9,15 @@ const apiClient = axios.create({
   headers: { 'Content-Type': 'application/json' },
 });
 
-// Attach JWT on every request
+// Attach JWT on every request; strip Content-Type for FormData so the browser
+// sets it automatically with the correct multipart boundary.
 apiClient.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('Propvio_token');
     if (token) config.headers.Authorization = `Bearer ${token}`;
+    if (config.data instanceof FormData) {
+      delete config.headers['Content-Type'];
+    }
     return config;
   },
   (error) => Promise.reject(error)
@@ -72,17 +76,25 @@ export const propertiesAPI = {
 
 // User-submitted listings — Spring Boot: /api/user/properties
 export const userListingsAPI = {
-  create: (formData: FormData) =>
-    apiClient.post('/user/properties', formData, { headers: { 'Content-Type': 'multipart/form-data' } }),
+  create: (data: Record<string, unknown>) =>
+    apiClient.post('/user/properties', data),
 
   getMyListings: () =>
     apiClient.get('/user/properties'),
 
-  update: (id: string, formData: FormData) =>
-    apiClient.put(`/user/properties/${id}`, formData, { headers: { 'Content-Type': 'multipart/form-data' } }),
+  update: (id: string, data: Record<string, unknown>) =>
+    apiClient.put(`/user/properties/${id}`, data),
 
   delete: (id: string) =>
     apiClient.delete(`/user/properties/${id}`),
+
+  uploadImages: (files: File[]): Promise<string[]> => {
+    const formData = new FormData();
+    files.forEach((file, i) => formData.append(`image${i + 1}`, file));
+    return apiClient
+      .post('/user/upload-images', formData)
+      .then((res) => (res.data?.data as string[]) ?? []);
+  },
 };
 
 // Appointments — Spring Boot: /api/appointments

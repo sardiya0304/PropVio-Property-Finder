@@ -52,7 +52,7 @@ const PropertiesGrid: React.FC<PropertiesGridProps> = ({ properties, viewMode = 
           <motion.div key={property._id} variants={item}>
             <PropertyCard
               id={property._id}
-              image={property.image?.[0] || fallbackImages[index % fallbackImages.length]}
+              image={property.image?.[0]}
               name={property.title}
               price={formatPrice(property.price)}
               location={property.location}
